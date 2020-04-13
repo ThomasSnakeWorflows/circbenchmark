@@ -1,0 +1,19 @@
+__default__:
+  mem: 8
+  name: "{rule}.{wildcards}"
+  time: "24:00:00"
+  output: "logs/cluster/{rule}.{wildcards}.out"
+  error: "logs/cluster/{rule}.{wildcards}.err"
+
+
+circminer:
+  mem: 16
+  threads: 1
+
+circexplorer:
+  mem: 8
+  threads: 1
+
+dcc:
+  mem: 4
+  threads: 8

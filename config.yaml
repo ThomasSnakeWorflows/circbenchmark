@@ -1,0 +1,22 @@
+
+ref:
+  name: grch38
+  # reference genome fasta file
+  fasta: /work2/genphyse/dynagen/tfaraut/CircRNA/benchmarking/CircMinerPaper/data/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa
+  # refernece genome gtf file
+  gtf: /work2/genphyse/dynagen/tfaraut/CircRNA/benchmarking/CircMinerPaper/data/Homo_sapiens.GRCh38.90.chr.gtf
+  # reference genome genepred file
+  genepred: /work2/genphyse/dynagen/tfaraut/CircRNA/benchmarking/CircMinerPaper/data/hg38_ref_enschr.txt
+
+starrefdir: /work2/genphyse/dynagen/tfaraut/CircRNA/benchmarking/CircMinerPaper/data/starindex
+
+fastqdir: /work2/genphyse/dynagen/tfaraut/CircRNA/benchmarking/CircMinerPaper/data/fastq
+
+bwamapdir: /work2/genphyse/dynagen/tfaraut/CircRNA/benchmarking/CircMinerPaper/bwamapping/mapping
+
+staroutdir: /work2/genphyse/dynagen/tfaraut/CircRNA/benchmarking/CircMinerPaper/starmapping/mapping
+
+circ_soft:  /work2/genphyse/dynagen/tfaraut/CircRNA/softwares
+
+samples: "samples.txt"
+wdir: "circrnas"
