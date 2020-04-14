@@ -30,7 +30,7 @@ def get_se_chimeric_junctions(wildcards):
 
 def get_fastq(wildcards):
     fq1 = os.path.join(config['fastqdir'], "%s_1.fastq.gz" % wildcards.sample)
-    fq2 = os.path.join(config['fastqdir'], "%s_1.fastq.gz" % wildcards.sample)
+    fq2 = os.path.join(config['fastqdir'], "%s_2.fastq.gz" % wildcards.sample)
     return  {"fq1": fq1, "fq2": fq2}
 
 
@@ -46,7 +46,7 @@ rule all:
     input:
         expand("{sample}/circexplorer_circ.txt", sample=samples),
         expand("{sample}/circminer.circ_report", sample=samples),
-        expand("{sample}/circexplorer2_circrnas_known.txt", sample=samples),
+        expand("{sample}/circexplorer2_circrna.txt", sample=samples),
         expand("{sample}/dcc/CircRNACount", sample=samples)
 
 
@@ -81,25 +81,33 @@ rule circexplorer:
 
 rule circexplorer2:
     input:
-        chimeric=get_pe_chimeric_junction,
+        unpack(get_fastq),
         ref=config["ref"]["fasta"],
+        gtf=config["ref"]["gtf"],
         genepred=config["ref"]["genepred"]
     output:
-        circrna="{sample}/circexplorer2_circrnas_known.txt",
+        circrna="{sample}/circexplorer2_circrna.txt",
         junctions="{sample}/circexplorer2_BSJ.bed"
     log:
+        align="logs/{sample}.circexplorer2_align.log",
         parse="logs/{sample}.circexplorer2_parse.log",
         annotate="logs/{sample}.circexplorer2_annotate.log"
+    params:
+        bowtie1_index = config['bowtie1_index'],
+        bowtie2_index = config['bowtie2_index'],
     shell:
         """
         set +u; \
         source /home/faraut/dynawork/CircRNA/softwares/CIRCexplorer2/circ2env/bin/activate \
         set -u
-        CIRCexplorer2 parse -t STAR {input.chimeric} -b {output.junctions}> {log.parse} > {log.parse}
+        CIRCexplorer2 align  -G {input.gtf} -i {params.bowtie1_index} \
+                      -j {params.bowtie2_index} -f {input.fq1},{input.fq2} \
+                      -b {output.junctions} \
+                      > {log.align}
         CIRCexplorer2 annotate -r {input.genepred} -g {input.ref}  \
            -b {output.junctions} -o {output.circrna} > {log.annotate}
         """
-
+#CIRCexplorer2 parse -t STAR {input.chimeric} -b {output.junctions}> {log.parse} > {log.parse}
 
 rule circminer:
     input:
@@ -114,12 +122,14 @@ rule circminer:
     log:
         stderr="logs/{sample}.circminer.e",
         stdout="logs/{sample}.circminer.o"
+    shadow:
+        "shallow"
     shell:
         """
         module load compiler/gcc-5.3.0
         circminer=/work2/genphyse/dynagen/tfaraut/CircRNA/softwares/circminer/circminer
         $circminer -r {input.ref} -g {input.gtf} -s {input.fq1} -2 {input.fq2} \
-        -o {params.prefix} -k 20 -a 0 -S 500  1>{log.stdout} 2>{log.stderr}
+        -o {params.prefix} -k 20 -a 0 -S 500 1>{log.stdout} 2>{log.stderr}
         """
 
 rule dcc:

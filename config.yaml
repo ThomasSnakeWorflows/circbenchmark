@@ -8,6 +8,10 @@ ref:
   # reference genome genepred file
   genepred: /work2/genphyse/dynagen/tfaraut/CircRNA/benchmarking/CircMinerPaper/data/hg38_ref_enschr.txt
 
+bowtie1_index: /bank/bowtiedb/ensembl_homo_sapiens_genome
+
+bowtie2_index: /bank/bowtie2db/ensembl_homo_sapiens_genome
+
 starrefdir: /work2/genphyse/dynagen/tfaraut/CircRNA/benchmarking/CircMinerPaper/data/starindex
 
 fastqdir: /work2/genphyse/dynagen/tfaraut/CircRNA/benchmarking/CircMinerPaper/data/fastq
