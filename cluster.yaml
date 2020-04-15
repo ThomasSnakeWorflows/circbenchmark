@@ -14,6 +14,10 @@ circexplorer:
   mem: 8
   threads: 1
 
+circexplorer2:
+  mem: 8
+  threads: 16  
+
 dcc:
   mem: 4
   threads: 8

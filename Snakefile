@@ -46,7 +46,7 @@ rule all:
     input:
         expand("{sample}/circexplorer_circ.txt", sample=samples),
         expand("{sample}/circminer.circ_report", sample=samples),
-        expand("{sample}/circexplorer2_circrna.txt", sample=samples),
+        #expand("{sample}/circexplorer2_circrna.txt", sample=samples),
         expand("{sample}/dcc/CircRNACount", sample=samples)
 
 
@@ -94,7 +94,11 @@ rule circexplorer2:
         annotate="logs/{sample}.circexplorer2_annotate.log"
     params:
         bowtie1_index = config['bowtie1_index'],
-        bowtie2_index = config['bowtie2_index'],
+        bowtie2_index = config['bowtie2_index']
+    shadow:
+        "shallow"
+    threads:
+        16
     shell:
         """
         set +u; \
@@ -102,7 +106,7 @@ rule circexplorer2:
         set -u
         CIRCexplorer2 align  -G {input.gtf} -i {params.bowtie1_index} \
                       -j {params.bowtie2_index} -f {input.fq1},{input.fq2} \
-                      -b {output.junctions} \
+                      -b {output.junctions} -p {threads}\
                       > {log.align}
         CIRCexplorer2 annotate -r {input.genepred} -g {input.ref}  \
            -b {output.junctions} -o {output.circrna} > {log.annotate}
