@@ -41,14 +41,35 @@ samples = get_samples(config['samples'])
 workdir: config['wdir']
 message("The current working directory is " + config['wdir'])
 
+tools= ["circminer", "circexplorer", "dcc", "auzeville"]
+
+localrules: unify
 
 rule all:
     input:
-        expand("{sample}/circexplorer_circ.txt", sample=samples),
-        expand("{sample}/circminer.circ_report", sample=samples),
-        #expand("{sample}/circexplorer2_circrna.txt", sample=samples),
-        expand("{sample}/dcc/CircRNACount", sample=samples)
+        expand("{sample}/{tool}.out", sample=samples, tool=tools)
 
+
+rule unify:
+    input:
+        circexplorer = "{sample}/circexplorer_circ.txt",
+        #  circexplorer2 = "{sample}/circexplorer2_circrna.txt",
+        dcc = "{sample}/dcc/CircRNACount",
+        circminer = "{sample}/circminer.circ_report",
+        auzeville = "{sample}/auzeville.bed"
+    output:
+        circexplorer = "{sample}/circexplorer.out",
+        #  circexplorer2 = "{sample}/circexplorer2.out",
+        dcc = "{sample}/dcc.out",
+        circminer = "{sample}/circminer.out",
+        auzeville = "{sample}/auzeville.out"
+    shell:
+        """
+        ln -sr {input.circexplorer} {output.circexplorer}
+        ln -sr {input.circminer} {output.circminer}
+        ln -sr {input.dcc} {output.dcc}
+        ln -sr {input.auzeville} {output.auzeville}
+        """
 
 rule circexplorer:
     input:
@@ -68,7 +89,7 @@ rule circexplorer:
     shell:
         """
         set +u; \
-        source /home/faraut/dynawork/CircRNA/softwares/CIRCexplorer/circenv/bin/activate ;
+        source /home/faraut/dynawork/CircRNA/softwares/CIRCexplorer/circenv/bin/activate ; \
         set -u
         circeplorerpath=/home/faraut/dynawork/CircRNA/softwares/CIRCexplorer/circ
         python $circeplorerpath/star_parse.py {input.chimeric} \
@@ -102,7 +123,7 @@ rule circexplorer2:
     shell:
         """
         set +u; \
-        source /home/faraut/dynawork/CircRNA/softwares/CIRCexplorer2/circ2env/bin/activate \
+        source /home/faraut/dynawork/CircRNA/softwares/CIRCexplorer2/circ2env/bin/activate ; \
         set -u
         CIRCexplorer2 align  -G {input.gtf} -i {params.bowtie1_index} \
                       -j {params.bowtie2_index} -f {input.fq1},{input.fq2} \
@@ -163,4 +184,23 @@ rule dcc:
         DCC -t {params.temp} -D -mt1 {input.R1} -mt2 {input.R2} -T {threads} \
             -an {input.gtf} -Pi -F -N -Nr 1 1 -fg -A {input.ref} {input.pechim} \
             -O {params.outputdir} 1>{log.stdout} 2>{log.stderr}
+        """
+
+rule auzeville:
+    input:
+        unpack(get_se_chimeric_junctions)
+    output:
+        "{sample}/auzeville.bed"
+    log:
+        stderr="logs/{sample}.auzeville.e",
+        stdout="logs/{sample}.auzeville.o"
+    params:
+        min_ccr=1
+    shell:
+        """
+        set +u; \
+        source ../circrnaenv/bin/activate ; \
+        set -u
+        python3 ../circRNA/scripts/circRNA_detection.py -r1 {input.R1} -r2 {input.R2} \
+            -min_cr {params.min_ccr} -tol 0 -fmt bed -o {output} 1>{log.stdout} 2>{log.stderr}
         """
